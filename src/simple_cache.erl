@@ -32,7 +32,7 @@
 %%% Public API.
 -export([init/1]).
 -export([get/4]).
--export([flush/1, flush/2]).
+-export([flush/1, flush/2, clear/2]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Public API.
@@ -51,6 +51,12 @@ init(CacheName) ->
 flush(CacheName, Key) ->
   RealName = ?NAME(CacheName),
   ets:delete(RealName, Key).
+
+%% @doc Deletes the keys that match the given pattern from the cache.
+-spec clear(string(), term()) -> true.
+clear(CacheName, Pattern) ->
+  RealName = ?NAME(CacheName),
+  ets:match_delete(RealName, Pattern).
 
 %% @doc Deletes all keys in the given cache.
 -spec flush(string()) -> true.
