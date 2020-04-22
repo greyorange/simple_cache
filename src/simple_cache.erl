@@ -23,8 +23,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Types.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
--define(ETS_TID, atom_to_list(?MODULE)).
--define(NAME(N), list_to_atom(?ETS_TID ++ "_" ++ atom_to_list(N))).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Exports.
@@ -40,8 +38,7 @@
 %% @doc Initializes a cache.
 -spec init(string()) -> ok.
 init(CacheName) ->
-  RealName = ?NAME(CacheName),
-  RealName = ets:new(RealName, [
+  CacheName = ets:new(CacheName, [
     named_table, {read_concurrency, true}, public, {write_concurrency, true}
   ]),
   ok.
@@ -49,37 +46,33 @@ init(CacheName) ->
 %% @doc Deletes the keys that match the given ets:matchspec() from the cache.
 -spec flush(string(), term()) -> true.
 flush(CacheName, Key) ->
-  RealName = ?NAME(CacheName),
-  ets:delete(RealName, Key).
+  ets:delete(CacheName, Key).
 
 %% @doc Deletes the keys that match the given pattern from the cache.
 -spec clear(string(), term()) -> true.
 clear(CacheName, Pattern) ->
-  RealName = ?NAME(CacheName),
-  ets:match_delete(RealName, Pattern).
+  ets:match_delete(CacheName, Pattern).
 
 %% @doc Deletes all keys in the given cache.
 -spec flush(string()) -> true.
 flush(CacheName) ->
-  RealName = ?NAME(CacheName),
-  true = ets:delete_all_objects(RealName).
+  true = ets:delete_all_objects(CacheName).
 
 %% @doc Tries to lookup Key in the cache, and execute the given FunResult
 %% on a miss.
 -spec get(string(), infinity|pos_integer(), term(), function()) -> term().
 get(CacheName, LifeTime, Key, FunResult) ->
-  RealName = ?NAME(CacheName),
-  case ets:lookup(RealName, Key) of
+  case ets:lookup(CacheName, Key) of
     [] ->
       % Not found, create it.
-      create_value(RealName, LifeTime, Key, FunResult);
+      create_value(CacheName, LifeTime, Key, FunResult);
     [{Key, R, _CreatedTime, infinity}] -> R; % Found, wont expire, return the value.
     [{Key, R, CreatedTime, LifeTime}] ->
       TimeElapsed = now_usecs() - CreatedTime,
       if
         TimeElapsed > (LifeTime * 1000) ->
           % expired? create a new value
-          create_value(RealName, LifeTime, Key, FunResult);
+          create_value(CacheName, LifeTime, Key, FunResult);
         true -> R % Not expired, return it.
       end
   end.
@@ -89,9 +82,9 @@ get(CacheName, LifeTime, Key, FunResult) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% @doc Creates a cache entry.
 -spec create_value(string(), pos_integer(), term(), function()) -> term().
-create_value(RealName, LifeTime, Key, FunResult) ->
+create_value(CacheName, LifeTime, Key, FunResult) ->
   R = FunResult(),
-  ets:insert(RealName, {Key, R, now_usecs(), LifeTime}),
+  ets:insert(CacheName, {Key, R, now_usecs(), LifeTime}),
   R.
 
 %% @doc Returns total amount of microseconds since 1/1/1.
