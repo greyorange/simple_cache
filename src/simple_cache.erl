@@ -30,7 +30,7 @@
 %%% Public API.
 -export([init/1]).
 -export([get/4]).
--export([flush/1, flush/2, clear/2]).
+-export([flush/1, flush/2, clear/2, create_value/4]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Public API.
