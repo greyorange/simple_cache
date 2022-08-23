@@ -90,7 +90,13 @@ get(CacheName, LifeTime, Key, FunResult, Options) ->
             true -> prometheus_summary:observe(simple_cache_hit_boolean, [CacheName], 0);
             false -> ok
           end,
-          create_value(CacheName, LifeTime, Key, FunResult);
+          case maps:get(flush_after_ttl, Options, false) of
+            false ->
+              create_value(CacheName, LifeTime, Key, FunResult);
+            teue ->
+              flush(CacheName, Key),
+              {error, expired}
+          end;
         true ->
           case CollectMetric of
             true -> prometheus_summary:observe(simple_cache_hit_boolean, [CacheName], 1);
