@@ -61,7 +61,7 @@ flush(CacheName, {ani_todo, MnesiaKey, _Type} = Key, TableName) ->
             mnesia:lock({TableName, MnesiaKey}, write),
             ets:delete(CacheName, Key)
         end,
-    {atomic, Result} = db_functions:transaction(FlushFun),
+    {atomic, Result} = db_functions:apply_transaction(FlushFun),
     Result;
 
 flush(CacheName, Key, _TableName) ->
@@ -117,7 +117,7 @@ create_value(TableName, CacheName, LifeTime, {ani_todo, MnesiaKey, _} = Key, Fun
             mnesia:lock({TableName, MnesiaKey}, write),
             create_value(CacheName, LifeTime, Key, FunResult)
         end,
-    {atomic, Result} = db_functions:transaction(CreateFun),
+    {atomic, Result} = db_functions:apply_transaction(CreateFun),
     Result;
 create_value(_TableName, CacheName, LifeTime, Key, FunResult) ->
     create_value(CacheName, LifeTime, Key, FunResult).
