@@ -55,7 +55,7 @@ flush(CacheName, Key) ->
 
 % for safe flushing of custom cahing layer on top of mnesia
 -spec flush(string(), term(), atom()) -> true.
-flush(CacheName, {ani_todo, MnesiaKey, _Type} = Key, TableName) ->
+flush(CacheName, {get_data_by_key, MnesiaKey, _Type} = Key, TableName) ->
     FlushFun =
         fun() ->
             mnesia:lock({TableName, MnesiaKey}, write),
@@ -111,7 +111,7 @@ get(CacheName, LifeTime, Key, FunResult, Options) ->
 
 create_value(undefined, CacheName, LifeTime, Key, FunResult) ->
     create_value(CacheName, LifeTime, Key, FunResult);
-create_value(TableName, CacheName, LifeTime, {ani_todo, MnesiaKey, _} = Key, FunResult) ->
+create_value(TableName, CacheName, LifeTime, {get_data_by_key, MnesiaKey, _} = Key, FunResult) ->
     CreateFun =
         fun() ->
             mnesia:lock({TableName, MnesiaKey}, write),
