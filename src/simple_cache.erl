@@ -53,7 +53,7 @@ flush(CacheName) ->
 flush(CacheName, Key) ->
     ets:delete(CacheName, Key).
 
-% for safe flushing of custom cahing layer on top of mnesia
+% for safe flushing of custom caching layer on top of mnesia
 -spec flush(string(), term(), atom()) -> true.
 flush(CacheName, {get_data_by_key, MnesiaKey, _Type} = Key, TableName) ->
     FlushFun =
